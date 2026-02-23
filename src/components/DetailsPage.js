@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
 const API_BASE = process.env.REACT_APP_API;
@@ -9,20 +9,7 @@ function DetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Basic ObjectId validation (24 hex characters)
-    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
-    
-    if (!isValidObjectId) {
-      setError('Invalid gift ID format');
-      setLoading(false);
-      return;
-    }
-
-    fetchGiftDetails();
-  }, [id]);
-
-  const fetchGiftDetails = async () => {
+  const fetchGiftDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -42,11 +29,23 @@ function DetailsPage() {
       setGift(data);
     } catch (err) {
       setError('Unable to load gift details. Please try again later.');
-      console.error('Fetch gift details error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    // Basic ObjectId validation (24 hex characters)
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    
+    if (!isValidObjectId) {
+      setError('Invalid gift ID format');
+      setLoading(false);
+      return;
+    }
+
+    fetchGiftDetails();
+  }, [id, fetchGiftDetails]);
 
   return (
     <div className="page">
